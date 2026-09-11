@@ -61,6 +61,10 @@ that use it.
 Referencing the published feature is described in the
 [feature README](src/shared-agent-config/README.md#usage).
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) — for humans and agents alike.
+
 ## License
 
 [MIT](LICENSE)

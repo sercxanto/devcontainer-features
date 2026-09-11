@@ -1,0 +1,68 @@
+# Contributing
+
+For humans and agents alike. Kept short because agents load it every session.
+
+## What this repo is
+
+A collection of Dev Container Features (`src/<id>/`), published to
+`ghcr.io/sercxanto/devcontainer-features/<id>`. The layout `src/<id>` +
+`test/<id>` is dictated by the devcontainer tooling; do not restructure it.
+
+Each feature's `README.md` is its user documentation and is what ghcr.io
+renders. The root `README.md` is only the map. Design rationale lives in the
+feature README, next to the behaviour it explains.
+
+## Invariants
+
+These hold for every feature here. Breaking one is a bug, not a style choice.
+
+- **`install.sh` and hooks are POSIX `sh`.** No bashisms, no `apt`, no `curl`,
+  no Node. They must run on Alpine/BusyBox without `sudo`. The Alpine case is
+  in `run-local.sh`; keep it green.
+- **Hooks never fail the container.** A broken share is reported with a
+  `WARNING:`, then the hook exits 0. Blocking someone's dev environment is
+  worse than a missing feature.
+- **Everything is idempotent.** Double installation is a real case (a repo
+  pins the feature *and* it is a default feature). `mkdir -p`, `ln -sfn`,
+  `cp -Rn`; never assume a clean slate.
+- **No recursive walks on the hot path.** `postStartCommand` is O(1). A
+  recursive `chown` may run once per (volume, uid), gated — never per start.
+- **`mounts` and `containerEnv` in a manifest are static.** There is no option
+  interpolation. Do not add an option that pretends to switch one of them off.
+- **Shared state wins over local state** during migration. `cp -n`, never
+  `cp -f`; the volume is the source of truth.
+- **Nothing per-image goes into the shared volume.** Before sharing a path,
+  check what actually lives there (Claude's `~/.claude.json` carries
+  `installMethod`; that is why it is never linked).
+
+## Testing
+
+```bash
+./test/shared-agent-config/run-local.sh      # plain Docker; cross-container, migration, Alpine
+./test/shared-agent-config/run-harness.sh    # standard harness on an isolated copy
+./test/shared-agent-config/verify-claude-json.sh
+```
+
+Never run `devcontainer features test` on `src/` directly: the manifest names
+the production volume and the tests would write into it. `run-harness.sh`
+exists to prevent exactly that. On Colima/Lima the harness needs `TMPDIR`
+under `$HOME`; the wrapper sets it.
+
+Both suites must be green before a change is considered done. A change in
+behaviour without a test that would have caught the old behaviour is
+incomplete.
+
+## Changing a feature
+
+- Bump `version` in `devcontainer-feature.json` (semver) with any change in
+  behaviour; users pin by major version.
+- Keep the feature README in step with the code. If a paragraph explains
+  *why* something is the way it is and you change the *what*, rewrite the
+  paragraph — do not leave it describing the old design.
+- Adding an agent: follow *Adding an agent* in the feature README, and measure
+  what the agent's config-dir variable actually relocates before trusting it.
+
+## Publishing
+
+Manual, by the maintainer: see the root README. Publishing is not part of a
+contribution.
