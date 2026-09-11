@@ -1,0 +1,24 @@
+{
+    "defaults": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "shared-agent-config": {}
+        }
+    },
+    "with_home_link": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "shared-agent-config": {
+                "linkHome": true
+            }
+        }
+    },
+    "alongside_official_claude_code": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "ghcr.io/devcontainers/features/node:1": {},
+            "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+            "shared-agent-config": {}
+        }
+    }
+}

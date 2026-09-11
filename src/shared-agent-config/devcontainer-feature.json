@@ -1,0 +1,30 @@
+{
+    "id": "shared-agent-config",
+    "version": "0.1.0",
+    "name": "Shared agent config",
+    "description": "Shares the config directories of agentic coding tools (settings, credentials, skills, memory) across all dev containers on this machine via one named Docker volume. Installing the agents themselves is left to their own features. Currently supports Claude Code.",
+    "documentationURL": "https://github.com/sercxanto/devcontainer-features/tree/main/src/shared-agent-config",
+    "licenseURL": "https://github.com/sercxanto/devcontainer-features/blob/main/LICENSE",
+    "options": {
+        "linkHome": {
+            "type": "boolean",
+            "default": false,
+            "description": "Additionally symlink each agent's conventional home path (e.g. ~/.claude) into the shared volume, for tooling that hardcodes those paths. Off by default: the environment variables already cover the agents themselves, and the home paths often hold per-image state (downloads, backups) that should not be shared."
+        }
+    },
+    "mounts": [
+        {
+            "type": "volume",
+            "source": "shared-agent-config",
+            "target": "/opt/shared-agent-config"
+        }
+    ],
+    "containerEnv": {
+        "CLAUDE_CONFIG_DIR": "/opt/shared-agent-config/claude"
+    },
+    "installsAfter": [
+        "ghcr.io/anthropics/devcontainer-features/claude-code"
+    ],
+    "postCreateCommand": "/usr/local/share/shared-agent-config/setup.sh create",
+    "postStartCommand": "/usr/local/share/shared-agent-config/setup.sh start"
+}
