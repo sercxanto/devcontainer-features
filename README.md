@@ -50,13 +50,17 @@ On VM-based Docker setups (Colima, Lima) the CLI's workspace bind-mount needs
 
 ## Publishing
 
+Automatic: merging to `main` publishes every feature whose `version` is new
+to `ghcr.io/sercxanto/devcontainer-features` (see
+[CONTRIBUTING.md](CONTRIBUTING.md#versions-and-publishing)). The workflow
+summary shows what is in the registry afterwards.
+
+Manual fallback, with `docker login ghcr.io` and a token that has
+`write:packages`:
+
 ```bash
 devcontainer features publish -r ghcr.io -n sercxanto/devcontainer-features ./src
 ```
-
-Requires `docker login ghcr.io` with a token that has `write:packages`. The
-package may stay private; Docker only needs to be logged in on the machines
-that use it.
 
 Referencing the published feature is described in the
 [feature README](src/shared-agent-config/README.md#usage).

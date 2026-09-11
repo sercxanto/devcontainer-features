@@ -54,15 +54,30 @@ incomplete.
 
 ## Changing a feature
 
-- Bump `version` in `devcontainer-feature.json` (semver) with any change in
-  behaviour; users pin by major version.
 - Keep the feature README in step with the code. If a paragraph explains
   *why* something is the way it is and you change the *what*, rewrite the
   paragraph — do not leave it describing the old design.
 - Adding an agent: follow *Adding an agent* in the feature README, and measure
   what the agent's config-dir variable actually relocates before trusting it.
+- Adding a feature: `src/<id>/` and `test/<id>/` with `run-local.sh` and
+  `run-harness.sh`; CI picks both up by glob.
 
-## Publishing
+## Versions and publishing
 
-Manual, by the maintainer: see the root README. Publishing is not part of a
-contribution.
+The `version` field in `devcontainer-feature.json` (semver) is the release
+trigger — there are no git tags. A merge to `main` runs the publish workflow,
+and the CLI publishes exactly the features whose version does not exist in
+`ghcr.io/sercxanto/devcontainer-features` yet; everything else is skipped.
+
+So:
+
+- A change without a bump merges fine and publishes nothing. That is a valid
+  way to batch several PRs into one release. The PR check reports it as a
+  notice so it is a choice, not an oversight.
+- A bump publishes on merge. Bump in the same PR as the change, or in a PR of
+  its own — both are fine.
+- A bumped version that is not greater than `main`'s, or that already exists
+  in the registry, fails the PR check: publishing would silently skip it.
+
+Published versions are immutable. Users pin by major (`:0`), so a breaking
+change means a new major.

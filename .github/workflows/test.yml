@@ -1,0 +1,50 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Feature tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install devcontainer CLI
+        run: npm install -g @devcontainers/cli
+
+      # Every feature ships both scripts; both use throwaway volumes.
+      # See CONTRIBUTING.md.
+      - name: Cross-container tests (plain Docker)
+        run: for t in test/*/run-local.sh; do echo "::group::$t"; "$t"; echo "::endgroup::"; done
+
+      - name: Standard harness (isolated copy)
+        run: for t in test/*/run-harness.sh; do echo "::group::$t"; "$t"; echo "::endgroup::"; done
+
+  version:
+    name: Version check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the check diffs against the merge base
+
+      # Reports what merging this PR would publish. A changed feature without
+      # a version bump is a notice, not a failure -- batching changes is fine.
+      # A bumped version that is not greater, or already exists in the
+      # registry, fails: publishing would silently skip it.
+      - name: Check feature versions
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          .github/scripts/version-check.sh
+          origin/${{ github.base_ref }}
+          ghcr.io/${{ github.repository }}

@@ -1,0 +1,55 @@
+name: Publish
+
+# Runs on every change under src/ that lands on main. Publishing itself is
+# driven by the `version` field in each devcontainer-feature.json: the CLI
+# skips versions that already exist in the registry, so a merge without a
+# version bump publishes nothing. See CONTRIBUTING.md.
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish features
+        uses: devcontainers/action@v1
+        with:
+          publish-features: 'true'
+          base-path-to-features: './src'
+          # READMEs are hand-written; do not let the action generate them.
+          generate-docs: 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The action's "already exists, skipping" is easy to miss in the log.
+      # Say plainly what is now in the registry.
+      - name: Summarise
+        run: |
+          {
+            echo "## Features in ghcr.io/${{ github.repository }}"
+            echo
+            echo "| Feature | Version in main | Registry |"
+            echo "|---|---|---|"
+            for m in src/*/devcontainer-feature.json; do
+              id=$(jq -r .id "$m"); v=$(jq -r .version "$m")
+              tok=$(curl -fsS -u "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+                "https://ghcr.io/token?scope=repository:${{ github.repository }}/$id:pull" | jq -r .token)
+              code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $tok" \
+                -H 'Accept: application/vnd.oci.image.manifest.v1+json' \
+                "https://ghcr.io/v2/${{ github.repository }}/$id/manifests/$v")
+              case "$code" in
+                200) state="✅ $v present" ;;
+                *)   state="❌ $v missing (HTTP $code)" ;;
+              esac
+              echo "| $id | $v | $state |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
