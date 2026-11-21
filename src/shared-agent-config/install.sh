@@ -20,8 +20,13 @@
 set -eu
 
 SHARED_ROOT="/opt/shared-agent-config"
+# Per-devcontainer state: one volume per devcontainer (named with
+# ${devcontainerId}), mounted at STATE_ROOT/<agent>. It survives a rebuild of
+# that container but is not shared with other containers.
+STATE_ROOT="/opt/agent-state"
+STATE_DIRS="opencode"
 HOOK_DIR="/usr/local/share/shared-agent-config"
-AGENT_DIRS="claude"
+AGENT_DIRS="claude opencode"
 
 REMOTE_USER="${_REMOTE_USER:-root}"
 REMOTE_USER_HOME="${_REMOTE_USER_HOME:-/root}"
@@ -42,7 +47,14 @@ else
     REMOTE_GROUP="root"
 fi
 
-chown -R "${REMOTE_USER}:${REMOTE_GROUP}" "${SHARED_ROOT}"
+for agent in ${STATE_DIRS}; do
+    mkdir -p "${STATE_ROOT}/${agent}"
+done
+
+chown -R "${REMOTE_USER}:${REMOTE_GROUP}" "${SHARED_ROOT}" "${STATE_ROOT}"
+for agent in ${STATE_DIRS}; do
+    chmod 700 "${STATE_ROOT}/${agent}"
+done
 for agent in ${AGENT_DIRS}; do
     chmod 700 "${SHARED_ROOT}/${agent}"   # credentials live here -- not world-readable
 done

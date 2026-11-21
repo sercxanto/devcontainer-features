@@ -1,8 +1,8 @@
 {
     "id": "shared-agent-config",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "name": "Shared agent config",
-    "description": "Shares the config directories of agentic coding tools (settings, credentials, skills, memory) across all dev containers on this machine via one named Docker volume. Installing the agents themselves is left to their own features. Currently supports Claude Code.",
+    "description": "Shares the config directories of agentic coding tools (settings, credentials, skills, memory) across all dev containers on this machine via one named Docker volume. Installing the agents themselves is left to their own features. Currently supports Claude Code and opencode.",
     "documentationURL": "https://github.com/sercxanto/devcontainer-features/tree/main/src/shared-agent-config",
     "licenseURL": "https://github.com/sercxanto/devcontainer-features/blob/main/LICENSE",
     "options": {
@@ -17,10 +17,16 @@
             "type": "volume",
             "source": "shared-agent-config",
             "target": "/opt/shared-agent-config"
+        },
+        {
+            "type": "volume",
+            "source": "shared-agent-config-opencode-${devcontainerId}",
+            "target": "/opt/agent-state/opencode"
         }
     ],
     "containerEnv": {
-        "CLAUDE_CONFIG_DIR": "/opt/shared-agent-config/claude"
+        "CLAUDE_CONFIG_DIR": "/opt/shared-agent-config/claude",
+        "OPENCODE_DB": "/opt/agent-state/opencode/opencode.db"
     },
     "installsAfter": [
         "ghcr.io/anthropics/devcontainer-features/claude-code"

@@ -8,13 +8,14 @@ Currently one feature:
 
 | Feature | What it does |
 |---|---|
-| [`shared-agent-config`](src/shared-agent-config/) | Shares the config directories of agentic coding tools (settings, credentials, skills, memory) across all dev containers via one named Docker volume. Claude Code today; one subdirectory per agent. **Start with its README.** |
+| [`shared-agent-config`](src/shared-agent-config/) | Shares the config directories of agentic coding tools (settings, credentials, skills, memory) across all dev containers via one named Docker volume. Claude Code and opencode 2.x today; one subdirectory per agent. **Start with its README.** |
 
 ## Repository layout
 
 ```
 src/<feature-id>/     the feature: manifest, install script, hook, README
 test/<feature-id>/    its tests
+manual-test/<agent>/  a project to open in VS Code, for what scripts cannot show
 ```
 
 This layout is dictated by the devcontainer tooling, not by taste:
