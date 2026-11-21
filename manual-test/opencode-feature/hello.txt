@@ -1,0 +1,1 @@
+This file is for testing the opencode TUI: ask it to read or edit it.

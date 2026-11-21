@@ -1,0 +1,25 @@
+{
+    "id": "opencode",
+    "version": "0.1.0",
+    "name": "opencode 2.x",
+    "description": "Installs the opencode 2.x CLI (opencode.ai) system-wide and the opencode VS Code extension. Requires curl, tar and bash in the base image. Pairs with shared-agent-config, which shares its login and keeps its sessions per project.",
+    "documentationURL": "https://github.com/sercxanto/devcontainer-features/tree/main/src/opencode",
+    "licenseURL": "https://github.com/sercxanto/devcontainer-features/blob/main/LICENSE",
+    "options": {
+        "version": {
+            "type": "string",
+            "default": "latest",
+            "description": "opencode version to install, e.g. 2.3.2. 'latest' installs the newest 2.x release."
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "sst-dev.opencode"
+            ]
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
