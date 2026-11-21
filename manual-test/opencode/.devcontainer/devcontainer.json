@@ -1,0 +1,13 @@
+{
+    // Manual test project for the opencode support of shared-agent-config.
+    // The feature is the local copy that prepare.sh generates in ./sac -- with
+    // test volume names, so your production volume is never touched.
+    "name": "opencode manual test",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+    "features": {
+        "./sac": {}
+    },
+    // The feature does not install agents; this does, on every (re)build.
+    // Which package is chosen by prepare.sh (see README); default @opencode/cli.
+    "postCreateCommand": "npm install -g $(cat .devcontainer/opencode-package)"
+}

@@ -23,6 +23,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FEATURE_ID="shared-agent-config"
 PROD_VOLUME="shared-agent-config"
 TEST_VOLUME="shared-agent-config-harness-$$"
+# Per-devcontainer volumes are named <prefix>-${devcontainerId}; the id is only
+# known to the CLI, so they are found and removed by prefix.
+PROD_STATE_PREFIX="shared-agent-config-opencode-"
+TEST_STATE_PREFIX="$TEST_VOLUME-opencode-"
 
 # The CLI bind-mounts a workspace out of $TMPDIR. VM-based Docker setups (Colima,
 # Lima, some Docker Desktop configurations) only share $HOME by default, and
@@ -39,11 +43,11 @@ cleanup() {
     # The harness tears its containers down asynchronously; the volume is busy
     # for a moment after the CLI returns. Retry rather than leak it.
     for _ in 1 2 3 4 5 6 7 8 9 10; do
-        docker volume rm "$TEST_VOLUME" >/dev/null 2>&1 && return 0
-        docker volume inspect "$TEST_VOLUME" >/dev/null 2>&1 || return 0
+        docker volume ls -q --filter "name=$TEST_VOLUME" | xargs docker volume rm >/dev/null 2>&1 || true
+        [ -z "$(docker volume ls -q --filter "name=$TEST_VOLUME")" ] && return 0
         sleep 1
     done
-    echo "run-harness: could not remove $TEST_VOLUME; remove it by hand" >&2
+    echo "run-harness: could not remove volumes named $TEST_VOLUME*; remove them by hand" >&2
 }
 trap cleanup EXIT
 
@@ -53,6 +57,7 @@ cp -R "$REPO_ROOT/test/$FEATURE_ID" "$STAGE/test/"
 
 manifest="$STAGE/src/$FEATURE_ID/devcontainer-feature.json"
 sed -i.bak "s|\"source\": \"$PROD_VOLUME\"|\"source\": \"$TEST_VOLUME\"|" "$manifest"
+sed -i.bak "s|\"source\": \"$PROD_STATE_PREFIX|\"source\": \"$TEST_STATE_PREFIX|" "$manifest"
 rm -f "$manifest.bak"
 
 # Refuse to run if the rewrite did not take -- the whole point is isolation.
@@ -60,6 +65,11 @@ rm -f "$manifest.bak"
 # volume name, so a bare search for the name would trip over "id".
 if grep -q "\"source\": \"$PROD_VOLUME\"" "$manifest"; then
     echo "run-harness: failed to rewrite volume name in staged manifest; refusing to run" >&2
+    exit 1
+fi
+if grep -q "\"source\": \"$PROD_STATE_PREFIX" "$manifest" \
+   || ! grep -q "\"source\": \"$TEST_STATE_PREFIX" "$manifest"; then
+    echo "run-harness: per-devcontainer volume name was not rewritten; refusing to run" >&2
     exit 1
 fi
 if ! grep -q "\"source\": \"$TEST_VOLUME\"" "$manifest"; then

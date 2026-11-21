@@ -29,11 +29,21 @@ These hold for every feature here. Breaking one is a bug, not a style choice.
   recursive `chown` may run once per (volume, uid), gated — never per start.
 - **`mounts` and `containerEnv` in a manifest are static.** There is no option
   interpolation. Do not add an option that pretends to switch one of them off.
+  The one variable a mount may use is the spec's `${devcontainerId}` — it is
+  how per-project state (opencode's sessions) gets a volume of its own that
+  survives a rebuild without being shared. It is not an option and does not
+  contradict this rule.
 - **Shared state wins over local state** during migration. `cp -n`, never
   `cp -f`; the volume is the source of truth.
 - **Nothing per-image goes into the shared volume.** Before sharing a path,
   check what actually lives there (Claude's `~/.claude.json` carries
-  `installMethod`; that is why it is never linked).
+  `installMethod`; that is why it is never linked). Per-container secrets and
+  process state go to the per-devcontainer volume instead (opencode's
+  `service.json`, its state directory).
+- **Measure, then link.** Which paths an agent writes, and *how* it writes them,
+  decides the mechanism. opencode's `model.json` is saved by rename, which
+  replaces a file symlink; that is why its state directory is linked as a
+  whole. Do not guess from another version: only opencode 2.x is supported.
 
 ## Testing
 
@@ -51,6 +61,12 @@ under `$HOME`; the wrapper sets it.
 Both suites must be green before a change is considered done. A change in
 behaviour without a test that would have caught the old behaviour is
 incomplete.
+
+For what a script cannot show — a real login, a real TUI session, a rebuild in
+VS Code — there is a manual test project: `manual-test/opencode/`. Its README
+lists the steps. One trap: if the published feature is in your
+`dev.containers.defaultFeatures`, VS Code injects it next to the local copy and
+it wins, including your production volume. Comment it out for the test.
 
 ## Changing a feature
 
