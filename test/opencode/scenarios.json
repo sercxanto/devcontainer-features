@@ -1,0 +1,16 @@
+{
+    "defaults": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "opencode": {}
+        }
+    },
+    "pinned": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "features": {
+            "opencode": {
+                "version": "2.3.1"
+            }
+        }
+    }
+}

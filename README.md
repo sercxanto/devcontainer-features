@@ -4,10 +4,11 @@ Dev Container Features for running agentic coding tools inside **arbitrary,
 pre-existing dev containers** — without touching their `devcontainer.json` —
 with config, login and skills shared across every container on the machine.
 
-Currently one feature:
+Currently two features:
 
 | Feature | What it does |
 |---|---|
+| [`opencode`](src/opencode/) | Installs the opencode 2.x CLI (`version` option) and its VS Code extension. Needs `curl`, `tar`, `bash` in the image. |
 | [`shared-agent-config`](src/shared-agent-config/) | Shares the config directories of agentic coding tools (settings, credentials, skills, memory) across all dev containers via one named Docker volume. Claude Code and opencode 2.x today; one subdirectory per agent. **Start with its README.** |
 
 ## Repository layout
@@ -32,10 +33,12 @@ throwaway volume and removes it afterwards.
 ```bash
 # cross-container behaviour, plain Docker, no devcontainer CLI required
 ./test/shared-agent-config/run-local.sh
+./test/opencode/run-local.sh              # downloads opencode several times (~250 MB each)
 
 # the standard `devcontainer features test` harness, on an isolated copy
 ./test/shared-agent-config/run-harness.sh
 ./test/shared-agent-config/run-harness.sh --filter with_home_link
+./test/opencode/run-harness.sh
 
 # re-measure where Claude Code puts .claude.json when CLAUDE_CONFIG_DIR is set
 ./test/shared-agent-config/verify-claude-json.sh

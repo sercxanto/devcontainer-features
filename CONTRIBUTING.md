@@ -18,7 +18,10 @@ These hold for every feature here. Breaking one is a bug, not a style choice.
 
 - **`install.sh` and hooks are POSIX `sh`.** No bashisms, no `apt`, no `curl`,
   no Node. They must run on Alpine/BusyBox without `sudo`. The Alpine case is
-  in `run-local.sh`; keep it green.
+  in `run-local.sh`; keep it green. The one exception is a feature whose job
+  is to *download a tool* (`opencode`): its `install.sh` is still POSIX `sh`,
+  but may call `curl`/`tar`/`bash` — and then must check for them, fail the
+  build with a message that names what is missing, and never install packages.
 - **Hooks never fail the container.** A broken share is reported with a
   `WARNING:`, then the hook exits 0. Blocking someone's dev environment is
   worse than a missing feature.
