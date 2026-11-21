@@ -1,0 +1,10 @@
+{
+    // Manual test project for the `opencode` feature (the installer).
+    // The feature is the local copy that prepare.sh generates in ./opencode-local.
+    "name": "opencode feature manual test",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        // Change "version" to pin, e.g. "2.3.1"; rebuild afterwards.
+        "./opencode-local": { "version": "latest" }
+    }
+}
